@@ -1,17 +1,41 @@
 package com.avisrini.hellosb.student;
 
-import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
 public class StudentService {
 
+	private final StudentRepository studentRepository;
+	
+	@Autowired
+	public StudentService(StudentRepository studentRepository) {
+		this.studentRepository = studentRepository;
+		
+	}
+	
 	public List<Student> getStudents() {
-		return List.of(
-					new Student(1L, "Jack", "jack@b.c", LocalDate.of(2000, 6, 10), 21),
-					new Student(2L, "Jones", "jones@b.c", LocalDate.of(2001, 5, 13), 20)
-				);
+		return studentRepository.findAll();
+	}
+	
+	public void addNewStudent(Student student) {
+		Optional<Student> studentOptional = studentRepository.findStudentByEmail(student.getEmail());
+		
+		if (studentOptional.isPresent()) {
+			throw new IllegalStateException("Email exists already");
+		}
+		
+		studentRepository.save(student);
+	}
+
+	public void removeStudent(Long id) {
+		Optional<Student> studentOptional = studentRepository.findStudentById(id);
+		
+		if (studentOptional.isPresent()) {
+			studentRepository.deleteById(id);
+		}
 	}
 }
